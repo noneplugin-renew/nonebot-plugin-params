@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Type, cast
+from typing import TYPE_CHECKING, cast
 
 from nonebot import on_command
-from nonebot.adapters import Event, MessageSegment
 from nonebot.matcher import Matcher
+from nonebot.adapters import Event, MessageSegment
 
 from nonebot_plugin_params import (
     FEISHU,
@@ -26,15 +26,15 @@ async def _(
     matcher: Matcher,
     event: Event,
     adapter_name: str = AdapterName(),
-    MS: Type[MessageSegment] = MessageSegmentClass(),
+    MS: type[MessageSegment] = MessageSegmentClass(),
 ) -> None:
     await matcher.send("欢迎来到 wordle")
     if adapter_name == ONEBOT:
-        MS = cast("Type[Onebot_MessageSegment]", MS)  # only for type hint
+        MS = cast("type[Onebot_MessageSegment]", MS)  # only for type hint
         await matcher.send(MS.at(event.get_user_id()) + MS.text("mua~"))
         # user id like "1748272409"
 
     elif adapter_name == FEISHU:
-        MS = cast("Type[Feishu_MessageSegment]", MS)  # only for type hint
+        MS = cast("type[Feishu_MessageSegment]", MS)  # only for type hint
         await matcher.send(MS.at(event.get_user_id()) + MS.text("mua~"))
         # user id like "3e3cf96b"

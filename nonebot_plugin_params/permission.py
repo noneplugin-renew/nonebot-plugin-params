@@ -1,8 +1,9 @@
 """提供常用的权限检查。"""
+
 from nonebot.permission import Permission
 
+from .deps import EventName, AdapterName
 from .consts import FEISHU, ONEBOT, TELEGRAM
-from .deps import AdapterName, EventName
 
 
 class PrivateMessage:

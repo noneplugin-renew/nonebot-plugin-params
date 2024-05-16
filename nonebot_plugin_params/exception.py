@@ -1,8 +1,6 @@
-from nonebot.exception import AdapterException
 
 
-class ValidationError(Exception):
-    ...
+class ValidationError(Exception): ...
 
 
 class NotSupportException(Exception):

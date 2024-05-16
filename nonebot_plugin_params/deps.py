@@ -1,18 +1,19 @@
-from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Awaitable, Callable, Optional, Type, Union, cast
+from functools import lru_cache
+from typing import TYPE_CHECKING, Union, Callable, Optional, cast
+from collections.abc import Awaitable
 
-from nonebot.adapters import Bot, Event, MessageSegment
 from nonebot.params import Depends
+from nonebot.adapters import Bot, Event, MessageSegment
 
-from .consts import FEISHU, ONEBOT, QQGUILD, TELEGRAM
 from .exception import NotSupportException
+from .consts import FEISHU, ONEBOT, QQGUILD, TELEGRAM
 
 if TYPE_CHECKING:
+    from nonebot.adapters.qq import MessageSegment as QQGuild_MessageSegment
     from nonebot.adapters.feishu import MessageSegment as Feishu_MessageSegment
     from nonebot.adapters.onebot.v11 import MessageSegment as OneBot_MessageSegment
-    from nonebot.adapters.qqguild import MessageSegment as QQGuild_MessageSegment
 
 
 async def _event_name(event: Event) -> str:
@@ -32,7 +33,7 @@ def AdapterName() -> str:
     return Depends(_adapter_name)
 
 
-def _generic_message_segment_class(bot: Bot, _fake_key: int) -> Type[MessageSegment]:
+def _generic_message_segment_class(bot: Bot, _fake_key: int) -> type[MessageSegment]:
     """This is implicit, so only use if adapter not support.
 
     `_fake_key` prevent this function to be a dependency.
@@ -44,7 +45,7 @@ def _generic_message_segment_class(bot: Bot, _fake_key: int) -> Type[MessageSegm
 
 
 @lru_cache(maxsize=10)
-def __message_segment_class(adapter_name: str) -> Optional[Type[MessageSegment]]:
+def __message_segment_class(adapter_name: str) -> Optional[type[MessageSegment]]:
     if adapter_name == ONEBOT:
         from nonebot.adapters.onebot.v11 import MessageSegment
 
@@ -56,21 +57,21 @@ def __message_segment_class(adapter_name: str) -> Optional[Type[MessageSegment]]
         return MessageSegment
 
     elif adapter_name == QQGUILD:
-        from nonebot.adapters.qqguild import MessageSegment
+        from nonebot.adapters.qq import MessageSegment
 
         return MessageSegment
 
 
 async def _message_segment_class(
     bot: Bot, adapter_name: str = AdapterName()
-) -> Type[MessageSegment]:
+) -> type[MessageSegment]:
     ms = __message_segment_class(adapter_name)
     if ms is None:
         return _generic_message_segment_class(bot, 0)
     return ms
 
 
-def MessageSegmentClass() -> Type[MessageSegment]:
+def MessageSegmentClass() -> type[MessageSegment]:
     """获取 Adapter 对应的 MessageSegment 类。
 
     适配: OneBot, Feishu, QQGuild
@@ -82,7 +83,7 @@ def MessageSegmentClass() -> Type[MessageSegment]:
 class _get_image_segment:
     bot: Bot
     adapter_name: str
-    _MS: Type[MessageSegment]
+    _MS: type[MessageSegment]
 
     auto_convertion: bool = True
     """如果能够转换，则自动转换图片类型。如 Path 转 str， BytesIO 转 bytes。"""
@@ -91,7 +92,7 @@ class _get_image_segment:
         self,
         bot: Bot,
         adapter_name: str = AdapterName(),
-        MS: Type[MessageSegment] = MessageSegmentClass(),
+        MS: type[MessageSegment] = MessageSegmentClass(),
     ) -> None:
         self.bot = bot
         self.adapter_name = adapter_name
@@ -99,12 +100,12 @@ class _get_image_segment:
 
     async def __call__(self, file: Union[str, bytes, BytesIO, Path]) -> MessageSegment:
         if self.adapter_name == ONEBOT:
-            self._MS = cast("Type[OneBot_MessageSegment]", self._MS)
+            self._MS = cast("type[OneBot_MessageSegment]", self._MS)
             return self._MS.image(file)
 
         elif self.adapter_name == FEISHU:
             # experimental code
-            self._MS = cast("Type[Feishu_MessageSegment]", self._MS)
+            self._MS = cast("type[Feishu_MessageSegment]", self._MS)
             if isinstance(file, (str, Path)):
                 with open(file, "rb") as f:
                     file = f.read()
@@ -128,7 +129,7 @@ class _get_image_segment:
             return File.photo(file)
 
         elif self.adapter_name == QQGUILD:
-            self._MS = cast("Type[QQGuild_MessageSegment]", self._MS)
+            self._MS = cast("type[QQGuild_MessageSegment]", self._MS)
 
             if isinstance(file, str):
                 return self._MS.image(file)
@@ -144,9 +145,9 @@ class _get_image_segment:
         raise NotSupportException
 
 
-def ImageSegmentMethod() -> Callable[
-    [Union[str, bytes, BytesIO, Path]], Awaitable[MessageSegment]
-]:
+def ImageSegmentMethod() -> (
+    Callable[[Union[str, bytes, BytesIO, Path]], Awaitable[MessageSegment]]
+):
     """获取 Image Segment 的构造方法。
 
     适配: OneBot, QQGuild

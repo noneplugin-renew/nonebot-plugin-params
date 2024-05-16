@@ -1,16 +1,15 @@
-from typing import Tuple
-
-from nonebot.rule import Rule
 from typing_extensions import Literal
 
+from nonebot.rule import Rule
+
+from .deps import EventName, AdapterName
 from .consts import FEISHU, ONEBOT, QQGUILD, TELEGRAM
-from .deps import AdapterName, EventName
 
 
 class _check_adapter_name:
     __slots__ = ("names",)
 
-    def __init__(self, names: Tuple[str, ...]) -> None:
+    def __init__(self, names: tuple[str, ...]) -> None:
         self.names = names
 
     async def __call__(self, adapter_name: str = AdapterName()) -> bool:
