@@ -19,7 +19,7 @@ __plugin_meta__ = PluginMetadata(
     homepage="https://github.com/iyume/nonebot-plugin-params",
     type="library",
     config=None,
-    supported_adapters={"~onebot.v11", "~qq", "~feishu"},
+    supported_adapters={"~onebot.v11", "~qq", "~feishu", "~telegram"},
     extra={
         "author": "iyume",
         "priority": 1,
